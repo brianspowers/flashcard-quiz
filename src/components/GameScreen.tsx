@@ -318,7 +318,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const progressPct = deck.length > 0 ? Math.round(((currentIndex) / deck.length) * 100) : 0;
 
   return (
-    <div className="max-w-3xl w-full mx-auto px-4 py-2 sm:py-3 flex flex-col flex-1 justify-between min-h-0">
+    <div className="max-w-3xl w-full mx-auto px-4 pt-3.5 pb-2 sm:pt-4.5 sm:pb-3 flex flex-col flex-1 justify-between min-h-0">
       {/* Top Bar: Progress, Score & Exit */}
       <div className="shrink-0">
         <div className="flex items-center justify-between gap-4 mb-2">
@@ -341,27 +341,36 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </h3>
           </div>
 
-          {/* Running Score Indicator */}
-          <div className="relative">
+          {/* Running Score Indicator (Prominent Arcade HUD) */}
+          <div className="relative pt-1">
             <div
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-2xl font-fun font-bold text-base sm:text-lg border transition-all ${
+              className={`flex items-center gap-2.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-2xl font-fun font-bold border-2 transition-all duration-300 shadow-md ${
                 runningScore > 0
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400/80 shadow-emerald-400/30'
                   : runningScore < 0
-                  ? 'bg-rose-50 text-rose-700 border-rose-200'
-                  : 'bg-amber-50 text-amber-700 border-amber-200'
+                  ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border-rose-400/80 shadow-rose-400/30'
+                  : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white border-amber-300/80 shadow-orange-400/30'
               }`}
             >
-              <span className="text-xs uppercase tracking-wider text-slate-500 font-sans font-semibold">Score:</span>
-              <span>{runningScore > 0 ? `+${runningScore}` : runningScore}</span>
+              <span className="text-xl sm:text-2xl drop-shadow-xs">⭐</span>
+              <div className="flex flex-col text-left leading-none">
+                <span className="text-[10px] uppercase font-sans font-extrabold tracking-wider text-white/85 mb-0.5">
+                  Score
+                </span>
+                <span className="text-xl sm:text-2xl font-extrabold tracking-tight font-fun">
+                  {runningScore > 0 ? `+${runningScore}` : runningScore}
+                </span>
+              </div>
             </div>
 
             {/* Score delta animation badge */}
             {scoreDelta && (
               <span
                 key={scoreDelta.id}
-                className={`absolute -top-3 right-2 text-xs font-extrabold px-1.5 py-0.5 rounded-full shadow-xs animate-pop ${
-                  scoreDelta.amount > 0 ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+                className={`absolute -top-1.5 -right-1 text-xs font-black px-2 py-0.5 rounded-full shadow-lg ring-2 animate-pop ${
+                  scoreDelta.amount > 0
+                    ? 'bg-emerald-600 text-white ring-white'
+                    : 'bg-rose-600 text-white ring-white'
                 }`}
               >
                 {scoreDelta.amount > 0 ? '+1' : '-1'}

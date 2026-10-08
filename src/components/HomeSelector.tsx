@@ -27,19 +27,13 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
   onGoToAdmin,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  // Map of setId -> expanded boolean (default all expanded)
-  const [expandedSetIds, setExpandedSetIds] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
-    sets.forEach((s) => {
-      map[s.id] = true;
-    });
-    return map;
-  });
+  // Map of setId -> expanded boolean (default all collapsed)
+  const [expandedSetIds, setExpandedSetIds] = useState<Record<string, boolean>>({});
 
   const toggleSetExpanded = (setId: string) => {
     setExpandedSetIds((prev) => ({
       ...prev,
-      [setId]: prev[setId] === undefined ? false : !prev[setId],
+      [setId]: !prev[setId],
     }));
   };
 
@@ -175,7 +169,7 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
       ) : (
         <div className="space-y-6">
           {filteredSets.map((set) => {
-            const isExpanded = expandedSetIds[set.id] ?? true;
+            const isExpanded = !!expandedSetIds[set.id];
             const totalWordsInSet = set.lists.reduce((acc, l) => acc + l.words.length, 0);
             const allSetWords = set.lists.flatMap((l) => l.words);
             const setStats = getGroupStats(allSetWords);
