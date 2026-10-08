@@ -1,0 +1,27 @@
+{
+  "id": "set-everyday-explorer",
+  "name": "Everyday Explorer",
+  "description": "Animals, colors, nature, and food words kids love to read",
+  "icon": "🦁",
+  "color": "purple",
+  "lists": [
+    {
+      "id": "list-explorer-creatures",
+      "name": "Creatures & Pets",
+      "description": "Familiar animal names",
+      "words": ["cat", "dog", "fish", "bird", "duck", "frog", "bear", "lion"]
+    },
+    {
+      "id": "list-explorer-colors",
+      "name": "Colors & Magic",
+      "description": "Bright descriptive words",
+      "words": ["red", "blue", "green", "yellow", "pink", "purple", "star", "moon", "sun"]
+    },
+    {
+      "id": "list-explorer-treats",
+      "name": "Yummy Treats",
+      "description": "Food and drink words",
+      "words": ["apple", "banana", "milk", "water", "bread", "cookie"]
+    }
+  ]
+}

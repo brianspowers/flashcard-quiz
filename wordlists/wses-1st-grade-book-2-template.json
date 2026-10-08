@@ -1,0 +1,48 @@
+{
+  "id": "set-wses-1st-grade-book-2",
+  "name": "WSES 1st Grade - Book #2",
+  "description": "Woodland Springs Elementary (WSES) 1st Grade - High Frequency Word Book #2",
+  "icon": "🏫",
+  "lists": [
+    {
+      "name": "List 1",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 2",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 3",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 4",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 5",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 6",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 7",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 8",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 9",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    },
+    {
+      "name": "List 10",
+      "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+    }
+  ]
+}

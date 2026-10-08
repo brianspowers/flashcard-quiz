@@ -1,0 +1,48 @@
+{
+  "id": "set-wses-1st-grade-book-1",
+  "name": "WSES 1st Grade - Book #1",
+  "description": "Woodland Springs Elementary (WSES) 1st Grade - High Frequency Word Book #1 (100 words total)",
+  "icon": "🏫",
+  "lists": [
+    {
+      "name": "List 1",
+      "words": ["the", "of", "and", "a", "to", "in", "is", "you", "that", "it"]
+    },
+    {
+      "name": "List 2",
+      "words": ["he", "was", "for", "on", "are", "as", "with", "his", "they", "I"]
+    },
+    {
+      "name": "List 3",
+      "words": ["at", "be", "this", "have", "from", "or", "one", "had", "by", "words"]
+    },
+    {
+      "name": "List 4",
+      "words": ["but", "not", "what", "all", "were", "we", "when", "your", "can", "said"]
+    },
+    {
+      "name": "List 5",
+      "words": ["there", "use", "an", "each", "which", "she", "do", "how", "their", "if"]
+    },
+    {
+      "name": "List 6",
+      "words": ["will", "up", "other", "about", "out", "many", "then", "them", "these", "so"]
+    },
+    {
+      "name": "List 7",
+      "words": ["some", "her", "would", "make", "like", "him", "into", "time", "has", "look"]
+    },
+    {
+      "name": "List 8",
+      "words": ["two", "more", "write", "go", "see", "number", "no", "way", "could", "people"]
+    },
+    {
+      "name": "List 9",
+      "words": ["my", "than", "first", "water", "been", "called", "who", "am", "its", "now"]
+    },
+    {
+      "name": "List 10",
+      "words": ["find", "long", "down", "day", "did", "get", "come", "made", "may", "part"]
+    }
+  ]
+}

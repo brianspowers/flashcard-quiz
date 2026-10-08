@@ -12,10 +12,13 @@ import {
   ListPlus, 
   Sparkles, 
   BookOpen, 
-  Volume2 
+  Volume2,
+  Library,
+  RefreshCw
 } from 'lucide-react';
 import type { WordSet, WordList, WordItem } from '../types';
-import { exportData, importData, resetToDefaults } from '../utils/storage';
+import { exportData, importData, resetToDefaults, installPreset } from '../utils/storage';
+import { PRESET_REGISTRY } from '../data/presetRegistry';
 import { speakWord } from '../utils/audio';
 
 interface AdminPanelProps {
@@ -64,12 +67,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingWordId, setEditingWordId] = useState<string | null>(null);
   const [editingWordText, setEditingWordText] = useState('');
 
+  // Preset library drawer state
+  const [showPresetLibrary, setShowPresetLibrary] = useState(false);
+
   // Backup status
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const showStatus = (text: string, type: 'success' | 'error' = 'success') => {
     setStatusMessage({ type, text });
     setTimeout(() => setStatusMessage(null), 3500);
+  };
+
+  const handleInstallPreset = (presetId: string) => {
+    const res = installPreset(presetId);
+    if (res.success) {
+      onUpdateSets(res.updatedSets);
+      setSelectedSetId(presetId);
+      const targetSet = res.updatedSets.find((s) => s.id === presetId);
+      if (targetSet?.lists[0]) {
+        setSelectedListId(targetSet.lists[0].id);
+      }
+      showStatus(res.message);
+    }
   };
 
   // 1. SET ACTIONS
@@ -397,8 +416,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </p>
         </div>
 
-        {/* Global actions: Backup & Reset */}
-        <div className="flex items-center gap-2">
+        {/* Global actions: Backup, Presets & Reset */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setShowPresetLibrary((prev) => !prev)}
+            className={`flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-colors cursor-pointer shadow-2xs border ${
+              showPresetLibrary
+                ? 'bg-emerald-600 text-white border-emerald-700'
+                : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
+            }`}
+            title="Browse and 1-click install official books and preset word sets"
+          >
+            <Library className="w-3.5 h-3.5" />
+            <span>Preset Books</span>
+          </button>
+
           <button
             onClick={handleExport}
             className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors cursor-pointer shadow-2xs"
@@ -424,6 +456,107 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Preset Books Drawer */}
+      {showPresetLibrary && (
+        <div className="mb-6 bg-linear-to-br from-emerald-50/70 via-white to-sky-50/70 border border-emerald-200 rounded-3xl p-5 shadow-xs animate-pop">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <Library className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-fun text-base font-bold text-slate-800">
+                  Preset Books & Starter Collections
+                </h3>
+                <p className="text-xs text-slate-500">
+                  1-click install official curriculum books and themed sets directly into your library.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPresetLibrary(false)}
+              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer"
+              title="Close preset library"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {PRESET_REGISTRY.map((preset) => {
+              const isInstalled = sets.some(
+                (s) => s.id === preset.id || s.name.trim().toLowerCase() === preset.name.trim().toLowerCase()
+              );
+
+              return (
+                <div
+                  key={preset.id}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                    isInstalled
+                      ? 'bg-emerald-50/50 border-emerald-200'
+                      : 'bg-white border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-2xl">{preset.icon}</span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                          preset.category === 'Official WSES'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                        }`}
+                      >
+                        {preset.category}
+                      </span>
+                    </div>
+                    <h4 className="font-fun font-bold text-slate-800 text-sm mb-1">{preset.name}</h4>
+                    <p className="text-xs text-slate-500 mb-3 line-clamp-2">{preset.description}</p>
+                    <div className="text-[11px] font-semibold text-slate-600 mb-4 flex items-center gap-2">
+                      <span>{preset.listCount} lists</span>
+                      <span>&bull;</span>
+                      <span>{preset.wordCount} words</span>
+                      {preset.isDefaultAutoLoaded && (
+                        <>
+                          <span>&bull;</span>
+                          <span className="text-emerald-700 font-bold">Auto-Default</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    {isInstalled ? (
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-emerald-200/60">
+                        <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5" /> In Library
+                        </span>
+                        <button
+                          onClick={() => handleInstallPreset(preset.id)}
+                          className="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                          title="Re-sync official pristine version of this book"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Re-sync</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleInstallPreset(preset.id)}
+                        className="w-full text-xs font-bold px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add to My Sets</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Set Selection & List Selection */}
@@ -577,7 +710,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="space-y-2">
                     <input
                       type="text"
-                      placeholder="List Name (e.g. Week 1, Animals, High Frequency)"
+                      placeholder="List Name (e.g. List 1, Animals, High Frequency)"
                       value={newListName}
                       onChange={(e) => setNewListName(e.target.value)}
                       className="w-full p-2 rounded-xl border border-emerald-200 bg-white text-xs font-bold"

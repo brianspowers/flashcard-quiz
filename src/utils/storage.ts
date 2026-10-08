@@ -1,186 +1,91 @@
 import type { WordSet, WordStatsMap, GameSummary, WordAttempt } from '../types';
+import { getDefaultPresets, getPresetById } from '../data/presetRegistry';
 
 const STORAGE_KEYS = {
-  SETS: 'wordquest_sets_v1',
+  SETS: 'wordquest_sets_v2', // v2 defaults to Woodland Springs Elementary (WSES) 1st Grade Word Book #1
   STATS: 'wordquest_stats_v1',
   HISTORY: 'wordquest_history_v1',
   SOUND_ENABLED: 'wordquest_sound_enabled_v1',
   AUTO_SPEAK: 'wordquest_auto_speak_v1',
 };
 
-// Rich default sets with Dolch & Fry sight words and fun vocabulary
-export const DEFAULT_SETS: WordSet[] = [
-  {
-    id: 'set-dolch-sight-words',
-    name: 'Dolch Sight Words',
-    description: 'Essential high-frequency sight words for early readers',
-    icon: '📚',
-    color: 'emerald',
-    lists: [
-      {
-        id: 'list-pre-k',
-        name: 'Pre-K Primer (List 1)',
-        description: 'First early sight words for preschool and pre-k',
-        words: [
-          { id: 'w-1', word: 'a' },
-          { id: 'w-2', word: 'and' },
-          { id: 'w-3', word: 'away' },
-          { id: 'w-4', word: 'big' },
-          { id: 'w-5', word: 'blue' },
-          { id: 'w-6', word: 'can' },
-          { id: 'w-7', word: 'come' },
-          { id: 'w-8', word: 'down' },
-          { id: 'w-9', word: 'find' },
-          { id: 'w-10', word: 'for' },
-        ],
-      },
-      {
-        id: 'list-pre-k-2',
-        name: 'Pre-K Primer (List 2)',
-        description: 'Common verbs and direction words',
-        words: [
-          { id: 'w-11', word: 'funny' },
-          { id: 'w-12', word: 'go' },
-          { id: 'w-13', word: 'help' },
-          { id: 'w-14', word: 'here' },
-          { id: 'w-15', word: 'in' },
-          { id: 'w-16', word: 'is' },
-          { id: 'w-17', word: 'it' },
-          { id: 'w-18', word: 'jump' },
-          { id: 'w-19', word: 'little' },
-          { id: 'w-20', word: 'look' },
-        ],
-      },
-      {
-        id: 'list-kindergarten-1',
-        name: 'Kindergarten (List 1)',
-        description: 'Crucial kindergarten sight words',
-        words: [
-          { id: 'w-21', word: 'all' },
-          { id: 'w-22', word: 'am' },
-          { id: 'w-23', word: 'are' },
-          { id: 'w-24', word: 'at' },
-          { id: 'w-25', word: 'ate' },
-          { id: 'w-26', word: 'be' },
-          { id: 'w-27', word: 'black' },
-          { id: 'w-28', word: 'brown' },
-          { id: 'w-29', word: 'but' },
-          { id: 'w-30', word: 'came' },
-        ],
-      },
-      {
-        id: 'list-kindergarten-2',
-        name: 'Kindergarten (List 2)',
-        description: 'More kindergarten essentials',
-        words: [
-          { id: 'w-31', word: 'did' },
-          { id: 'w-32', word: 'do' },
-          { id: 'w-33', word: 'eat' },
-          { id: 'w-34', word: 'four' },
-          { id: 'w-35', word: 'get' },
-          { id: 'w-36', word: 'good' },
-          { id: 'w-37', word: 'have' },
-          { id: 'w-38', word: 'he' },
-          { id: 'w-39', word: 'into' },
-          { id: 'w-40', word: 'like' },
-        ],
-      },
-      {
-        id: 'list-first-grade',
-        name: 'First Grade Core',
-        description: 'First grade reading staples',
-        words: [
-          { id: 'w-41', word: 'after' },
-          { id: 'w-42', word: 'again' },
-          { id: 'w-43', word: 'an' },
-          { id: 'w-44', word: 'any' },
-          { id: 'w-45', word: 'ask' },
-          { id: 'w-46', word: 'by' },
-          { id: 'w-47', word: 'could' },
-          { id: 'w-48', word: 'every' },
-          { id: 'w-49', word: 'fly' },
-          { id: 'w-50', word: 'from' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'set-fun-themes',
-    name: 'Everyday Explorer',
-    description: 'Animals, colors, nature, and food words kids love to read',
-    icon: '🦁',
-    color: 'amber',
-    lists: [
-      {
-        id: 'list-animals',
-        name: 'Creatures & Pets',
-        description: 'Familiar animal names',
-        words: [
-          { id: 'w-101', word: 'cat' },
-          { id: 'w-102', word: 'dog' },
-          { id: 'w-103', word: 'fish' },
-          { id: 'w-104', word: 'bird' },
-          { id: 'w-105', word: 'duck' },
-          { id: 'w-106', word: 'frog' },
-          { id: 'w-107', word: 'bear' },
-          { id: 'w-108', word: 'lion' },
-        ],
-      },
-      {
-        id: 'list-colors-shapes',
-        name: 'Colors & Magic',
-        description: 'Bright descriptive words',
-        words: [
-          { id: 'w-109', word: 'red' },
-          { id: 'w-110', word: 'blue' },
-          { id: 'w-111', word: 'green' },
-          { id: 'w-112', word: 'yellow' },
-          { id: 'w-113', word: 'pink' },
-          { id: 'w-114', word: 'purple' },
-          { id: 'w-115', word: 'star' },
-          { id: 'w-116', word: 'moon' },
-          { id: 'w-117', word: 'sun' },
-        ],
-      },
-      {
-        id: 'list-food-kitchen',
-        name: 'Yummy Treats',
-        description: 'Food and drink words',
-        words: [
-          { id: 'w-118', word: 'apple' },
-          { id: 'w-119', word: 'banana' },
-          { id: 'w-120', word: 'milk' },
-          { id: 'w-121', word: 'water' },
-          { id: 'w-122', word: 'bread' },
-          { id: 'w-123', word: 'cookie' },
-        ],
-      },
-    ],
-  },
-];
+// Default wordlist sets from the preset registry
+export const DEFAULT_SETS: WordSet[] = getDefaultPresets();
 
 // Helper to normalize word key
 export function normalizeWord(word: string): string {
   return word.trim().toLowerCase();
 }
 
-// Storage loaders
+// Storage loaders with non-destructive auto-sync for newly released books
 export function loadSets(): WordSet[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.SETS);
     if (!raw) {
-      saveSets(DEFAULT_SETS);
-      return DEFAULT_SETS;
+      const defaults = getDefaultPresets();
+      saveSets(defaults);
+      return defaults;
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+      // Auto-sync any default presets that are not yet in user sets (e.g. when Book #2 is released)
+      let hasUpdates = false;
+      const currentSets: WordSet[] = [...parsed];
+      const defaultPresets = getDefaultPresets();
+
+      for (const preset of defaultPresets) {
+        const alreadyExists = currentSets.some(
+          (s) => s.id === preset.id || s.name.trim().toLowerCase() === preset.name.trim().toLowerCase()
+        );
+        if (!alreadyExists) {
+          currentSets.push(preset);
+          hasUpdates = true;
+          console.info(`[WordQuest] Auto-synced new default set: ${preset.name}`);
+        }
+      }
+
+      if (hasUpdates) {
+        saveSets(currentSets);
+      }
+      return currentSets;
     }
-    return DEFAULT_SETS;
+    const defaults = getDefaultPresets();
+    saveSets(defaults);
+    return defaults;
   } catch (e) {
     console.error('Failed to load sets from storage', e);
-    return DEFAULT_SETS;
+    return getDefaultPresets();
   }
+}
+
+// 1-Click Install or Re-sync a preset book
+export function installPreset(presetId: string): { success: boolean; message: string; updatedSets: WordSet[] } {
+  const presetDef = getPresetById(presetId);
+  if (!presetDef) {
+    return { success: false, message: `Preset "${presetId}" not found.`, updatedSets: loadSets() };
+  }
+
+  const currentSets = loadSets();
+  const freshSet = presetDef.getSet();
+  const existingIndex = currentSets.findIndex(
+    (s) => s.id === freshSet.id || s.name.trim().toLowerCase() === freshSet.name.trim().toLowerCase()
+  );
+
+  let updatedSets: WordSet[];
+  if (existingIndex >= 0) {
+    updatedSets = [...currentSets];
+    updatedSets[existingIndex] = freshSet;
+  } else {
+    updatedSets = [...currentSets, freshSet];
+  }
+
+  saveSets(updatedSets);
+  const wordCount = freshSet.lists.reduce((acc, l) => acc + l.words.length, 0);
+  return {
+    success: true,
+    message: `Installed "${freshSet.name}" (${freshSet.lists.length} lists, ${wordCount} words)!`,
+    updatedSets,
+  };
 }
 
 export function saveSets(sets: WordSet[]): void {
@@ -264,7 +169,7 @@ export function resetAllStats(): void {
   localStorage.removeItem(STORAGE_KEYS.HISTORY);
 }
 
-// Reset everything to factory defaults
+// Reset everything to factory defaults (WSES Word Book #1)
 export function resetToDefaults(): { sets: WordSet[]; stats: WordStatsMap; history: GameSummary[] } {
   saveSets(DEFAULT_SETS);
   localStorage.removeItem(STORAGE_KEYS.STATS);
@@ -365,8 +270,23 @@ export function importData(jsonString: string): { success: boolean; message: str
       };
     }
 
-    saveSets(parsedSets);
-    return { success: true, message: `Successfully imported ${parsedSets.length} word set(s)!` };
+    // Smart Merge: Merge incoming sets into existing sets library so Book #2 appends without wiping Book #1
+    const currentSets = loadSets();
+    const mergedSets = [...currentSets];
+
+    parsedSets.forEach((incomingSet) => {
+      const idx = mergedSets.findIndex(
+        (s) => s.id === incomingSet.id || s.name.toLowerCase().trim() === incomingSet.name.toLowerCase().trim()
+      );
+      if (idx >= 0) {
+        mergedSets[idx] = incomingSet; // update existing set if same ID or name
+      } else {
+        mergedSets.push(incomingSet); // append new set (e.g. Book #2)
+      }
+    });
+
+    saveSets(mergedSets);
+    return { success: true, message: `Successfully imported ${parsedSets.length} word set(s)! Total library now has ${mergedSets.length} set(s).` };
   } catch (e) {
     return { success: false, message: `Failed to parse JSON file: ${(e as Error).message}` };
   }

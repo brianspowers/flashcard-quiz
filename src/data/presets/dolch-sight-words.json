@@ -1,0 +1,39 @@
+{
+  "id": "set-dolch-sight-words",
+  "name": "Dolch Sight Words",
+  "description": "Essential high-frequency sight words for early readers (Pre-K to 1st Grade)",
+  "icon": "📚",
+  "color": "amber",
+  "lists": [
+    {
+      "id": "list-dolch-pre-k-1",
+      "name": "Pre-K Primer (List 1)",
+      "description": "First early sight words for preschool and pre-k",
+      "words": ["a", "and", "away", "big", "blue", "can", "come", "down", "find", "for"]
+    },
+    {
+      "id": "list-dolch-pre-k-2",
+      "name": "Pre-K Primer (List 2)",
+      "description": "Common verbs and direction words",
+      "words": ["funny", "go", "help", "here", "in", "is", "it", "jump", "little", "look"]
+    },
+    {
+      "id": "list-dolch-k-1",
+      "name": "Kindergarten (List 1)",
+      "description": "Crucial kindergarten sight words",
+      "words": ["all", "am", "are", "at", "ate", "be", "black", "brown", "but", "came"]
+    },
+    {
+      "id": "list-dolch-k-2",
+      "name": "Kindergarten (List 2)",
+      "description": "More kindergarten essentials",
+      "words": ["did", "do", "eat", "four", "get", "good", "have", "he", "into", "like"]
+    },
+    {
+      "id": "list-dolch-1st-1",
+      "name": "First Grade Core",
+      "description": "First grade reading staples",
+      "words": ["after", "again", "an", "any", "ask", "by", "could", "every", "fly", "from"]
+    }
+  ]
+}

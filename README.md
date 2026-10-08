@@ -6,10 +6,47 @@ Designed for parents to review sight words and vocabulary with their children at
 
 ---
 
+## 🏫 Default Wordlist: Woodland Springs Elementary (WSES) Series
+
+The application comes pre-loaded with **WSES 1st Grade - Book #1** from **Woodland Springs Elementary (WSES)**:
+
+- **Current Edition**: High Frequency Word Book #1 (1st Grade)
+- **Total Words**: 100 high-frequency words
+- **Structure**: 10 lists of 10 words each (100 words total)
+
+### 📚 Ready for Future WSES Books (Book #2, Book #3, etc.)
+As your child progresses and additional word books are issued:
+- **Automatic Codebase Defaults (Auto-Discovery)**:
+  1. Add `src/data/presets/wses-1st-grade-book-2.json`.
+  2. Register it in [`src/data/presetRegistry.ts`](file:///c:/Users/Brian%20Powers/dev/flashcard-quiz/src/data/presetRegistry.ts) with `isDefaultAutoLoaded: true`.
+  3. **Auto-Sync**: Any browser (new or existing) will automatically receive Book #2 on next app launch without wiping Book #1 or resetting learning stats!
+- **1-Click In-App Bookshelf**: Click **Manage Words** &rarr; **Preset Books** to view all official books and starter themes, and install or re-sync them with a single click.
+- **Adding Future Books via JSON Import**: You can also populate the template [`wordlists/wses-1st-grade-book-2-template.json`](./wordlists/wses-1st-grade-book-2-template.json) and click **Import**.
+- **Adding Future Books in the UI**: Click **Manage Words** &rarr; **New Set** (e.g. *"WSES 1st Grade - Book #2"*). Add lists and paste words using **Bulk Paste Words**.
+
+---
+
+## 📁 Pre-Packaged Word List Library (`wordlists/` & `src/data/presets/`)
+
+The repository includes ready-to-use presets:
+
+| Preset | Details | In-App 1-Click |
+|---|---|---|
+| **WSES 1st Grade - Book #1** | 10 lists &bull; 100 high-frequency sight words | Auto-Loaded Default |
+| **WSES 1st Grade - Book #2 Template** | 10 lists &bull; Ready-to-fill template in `wordlists/` | Ready to configure |
+| **Dolch Sight Words** | 5 lists &bull; Pre-K Primer, Kindergarten, 1st Grade | Available in Preset Books |
+| **Everyday Explorer Themes** | 3 lists &bull; Creatures, Colors & Magic, Yummy Treats | Available in Preset Books |
+
+### How to Load Any Preset:
+- **Method 1 (Instant 1-Click)**: Click **Manage Words** &rarr; **Preset Books**, then click **Add to My Sets** or **Re-sync**.
+- **Method 2 (File Import)**: Click **Manage Words** &rarr; **Import**, and select any `.json` file from the `wordlists/` directory.
+
+---
+
 ## ✨ Features
 
 - **Word Sets & Lists Hierarchy**:
-  - Words are grouped into **Sets** (e.g. *Dolch Sight Words*, *Everyday Explorer*), which are broken down into **Lists** (e.g. *Pre-K Primer*, *Kindergarten*, *First Grade*).
+  - Words are grouped into **Sets**, which are further broken down into **Lists**.
   - Sets and lists can hold an arbitrary number of words.
 - **Flexible Play Modes**:
   - Play against an entire **Set** (all unique words in the set shuffled together).
@@ -41,7 +78,6 @@ Designed for parents to review sight words and vocabulary with their children at
   - Add individual words or **Bulk Paste** words (comma or newline separated).
   - In-place spelling edits and word deletion.
   - **Export / Import JSON**: Back up or share your custom lists and progress.
-  - Pre-loaded with curated Dolch sight words, colors, and animals out of the box.
 
 ---
 
@@ -59,46 +95,32 @@ When clicking **Export JSON**, the app exports a full snapshot containing word c
   "exportedAt": "2026-10-07T21:20:00.000Z",
   "sets": [
     {
-      "id": "set-dolch-sight-words",
-      "name": "Dolch Sight Words",
-      "description": "Essential high-frequency sight words for early readers",
-      "icon": "📚",
+      "id": "set-wses-1st-grade-book-1",
+      "name": "High Frequency Word Book #1",
+      "description": "Woodland Springs Elementary (WSES) 1st Grade Word Lists",
+      "icon": "🏫",
       "lists": [
         {
-          "id": "list-pre-k",
-          "name": "Pre-K Primer (List 1)",
-          "description": "First early sight words for preschool and pre-k",
+          "id": "list-1",
+          "name": "List 1",
           "words": [
-            { "id": "w-1", "word": "a" },
-            { "id": "w-2", "word": "and" },
-            { "id": "w-3", "word": "away" }
+            { "id": "w-1", "word": "the" },
+            { "id": "w-2", "word": "of" },
+            { "id": "w-3", "word": "and" }
           ]
         }
       ]
     }
   ],
   "stats": {
-    "away": {
+    "the": {
       "timesCorrect": 5,
-      "timesIncorrect": 1,
-      "currentStreak": 3,
+      "timesIncorrect": 0,
+      "currentStreak": 5,
       "lastPracticed": "2026-10-07T21:15:00.000Z"
     }
   },
-  "history": [
-    {
-      "id": "game-1728340000000",
-      "completedAt": "2026-10-07T21:15:00.000Z",
-      "targetType": "list",
-      "targetName": "Pre-K Primer (List 1)",
-      "totalWords": 10,
-      "correctCount": 9,
-      "incorrectCount": 1,
-      "finalScore": 8,
-      "accuracy": 90,
-      "missedWords": ["away"]
-    }
-  ]
+  "history": [ ... ]
 }
 ```
 
@@ -114,28 +136,18 @@ To create or share custom word sets without needing IDs, timestamps, or stats, y
 [
   {
     "name": "First Grade Sight Words",
-    "description": "Core weekly vocabulary lists",
+    "description": "Core vocabulary lists",
     "icon": "🚀",
     "lists": [
       {
-        "name": "Week 1",
+        "name": "List 1",
         "description": "Short vowel sounds",
         "words": ["cat", "dog", "sun", "big", "red"]
       },
       {
-        "name": "Week 2",
+        "name": "List 2",
         "description": "Action verbs",
         "words": ["jump", "run", "play", "help", "look"]
-      }
-    ]
-  },
-  {
-    "name": "Space & Nature",
-    "icon": "🪐",
-    "lists": [
-      {
-        "name": "Solar System",
-        "words": ["sun", "moon", "star", "earth", "mars"]
       }
     ]
   }
