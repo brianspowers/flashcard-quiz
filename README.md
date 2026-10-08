@@ -45,6 +45,147 @@ Designed for parents to review sight words and vocabulary with their children at
 
 ---
 
+## 📥 Word List Import & Export Formats
+
+The application provides two ways to add and import word lists: **JSON Import** (in the header of the *Manage Words* tab) and **Plain Text Bulk Paste** (within any list).
+
+### 1. Full Backup Export/Import Format (JSON)
+
+When clicking **Export JSON**, the app exports a full snapshot containing word collections, word performance statistics, and gameplay history:
+
+```json
+{
+  "version": 1,
+  "exportedAt": "2026-10-07T21:20:00.000Z",
+  "sets": [
+    {
+      "id": "set-dolch-sight-words",
+      "name": "Dolch Sight Words",
+      "description": "Essential high-frequency sight words for early readers",
+      "icon": "📚",
+      "lists": [
+        {
+          "id": "list-pre-k",
+          "name": "Pre-K Primer (List 1)",
+          "description": "First early sight words for preschool and pre-k",
+          "words": [
+            { "id": "w-1", "word": "a" },
+            { "id": "w-2", "word": "and" },
+            { "id": "w-3", "word": "away" }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "away": {
+      "timesCorrect": 5,
+      "timesIncorrect": 1,
+      "currentStreak": 3,
+      "lastPracticed": "2026-10-07T21:15:00.000Z"
+    }
+  },
+  "history": [
+    {
+      "id": "game-1728340000000",
+      "completedAt": "2026-10-07T21:15:00.000Z",
+      "targetType": "list",
+      "targetName": "Pre-K Primer (List 1)",
+      "totalWords": 10,
+      "correctCount": 9,
+      "incorrectCount": 1,
+      "finalScore": 8,
+      "accuracy": 90,
+      "missedWords": ["away"]
+    }
+  ]
+}
+```
+
+Any file exported in this format can be re-imported via **Import** with 100% fidelity.
+
+---
+
+### 2. Simplified Custom Set Array (JSON)
+
+To create or share custom word sets without needing IDs, timestamps, or stats, you can import a simple JSON array of sets. Words can simply be strings rather than objects:
+
+```json
+[
+  {
+    "name": "First Grade Sight Words",
+    "description": "Core weekly vocabulary lists",
+    "icon": "🚀",
+    "lists": [
+      {
+        "name": "Week 1",
+        "description": "Short vowel sounds",
+        "words": ["cat", "dog", "sun", "big", "red"]
+      },
+      {
+        "name": "Week 2",
+        "description": "Action verbs",
+        "words": ["jump", "run", "play", "help", "look"]
+      }
+    ]
+  },
+  {
+    "name": "Space & Nature",
+    "icon": "🪐",
+    "lists": [
+      {
+        "name": "Solar System",
+        "words": ["sun", "moon", "star", "earth", "mars"]
+      }
+    ]
+  }
+]
+```
+
+> **Note:** Any missing `id` properties will be automatically generated upon import.
+
+---
+
+### 3. Single Set Object (JSON)
+
+You can also import a single set containing one or more lists:
+
+```json
+{
+  "name": "Animal Friends",
+  "icon": "🦁",
+  "description": "Common farm and wild animals",
+  "lists": [
+    {
+      "name": "Farm",
+      "words": ["cow", "pig", "sheep", "horse", "goat"]
+    },
+    {
+      "name": "Safari",
+      "words": ["lion", "zebra", "giraffe", "monkey"]
+    }
+  ]
+}
+```
+
+---
+
+### 4. Plain Text "Bulk Paste Words" (No JSON Required)
+
+If you have a list from a teacher, email, or curriculum worksheet and do not want to create a JSON file:
+
+1. Open **Manage Words** &rarr; select any list.
+2. Click **Bulk Paste Words**.
+3. Paste words separated by commas, newlines, or spaces:
+   ```text
+   apple, banana, orange
+   grape, peach, pear
+   watermelon
+   ```
+4. Click **Add Words Now**. Words are automatically trimmed, validated, and deduplicated against existing entries.
+
+---
+
 ## 🚀 Getting Started
 
 ### 1. Install Dependencies
