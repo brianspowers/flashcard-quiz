@@ -288,21 +288,86 @@ export function exportData(): string {
   return JSON.stringify(data, null, 2);
 }
 
+// Normalizer to accept flexible input formats during import
+function normalizeImportedSets(rawSets: unknown[]): WordSet[] {
+  return rawSets.map((rawSet: any, setIdx) => {
+    const setId = rawSet.id || `set-${Date.now()}-${setIdx}`;
+    const setName = rawSet.name || `Set ${setIdx + 1}`;
+    const icon = rawSet.icon || '📚';
+    const description = rawSet.description || undefined;
+
+    const lists = Array.isArray(rawSet.lists)
+      ? rawSet.lists.map((rawList: any, listIdx: number) => {
+          const listId = rawList.id || `list-${Date.now()}-${setIdx}-${listIdx}`;
+          const listName = rawList.name || `List ${listIdx + 1}`;
+          const listDesc = rawList.description || undefined;
+
+          const words = Array.isArray(rawList.words)
+            ? rawList.words.map((w: any, wordIdx: number) => {
+                if (typeof w === 'string') {
+                  return { id: `w-${Date.now()}-${setIdx}-${listIdx}-${wordIdx}`, word: w.trim() };
+                }
+                return {
+                  id: w.id || `w-${Date.now()}-${setIdx}-${listIdx}-${wordIdx}`,
+                  word: String(w.word || '').trim(),
+                };
+              }).filter((w: { word: string }) => w.word.length > 0)
+            : [];
+
+          return {
+            id: listId,
+            name: listName,
+            description: listDesc,
+            words,
+          };
+        })
+      : [];
+
+    return {
+      id: setId,
+      name: setName,
+      description,
+      icon,
+      lists,
+    };
+  });
+}
+
 export function importData(jsonString: string): { success: boolean; message: string } {
   try {
     const data = JSON.parse(jsonString);
-    if (!data.sets || !Array.isArray(data.sets)) {
-      return { success: false, message: 'Invalid file format: missing sets list' };
+
+    let parsedSets: WordSet[] | null = null;
+
+    // Format 1: Full exported backup object `{ sets: [...], stats: {...}, history: [...] }`
+    if (data && typeof data === 'object' && Array.isArray(data.sets)) {
+      parsedSets = normalizeImportedSets(data.sets);
+      if (data.stats && typeof data.stats === 'object') {
+        saveStats(data.stats);
+      }
+      if (data.history && Array.isArray(data.history)) {
+        saveGameHistory(data.history);
+      }
+    } 
+    // Format 2: Direct array of sets `[ { name: "...", lists: [...] } ]`
+    else if (Array.isArray(data)) {
+      parsedSets = normalizeImportedSets(data);
     }
-    saveSets(data.sets);
-    if (data.stats && typeof data.stats === 'object') {
-      saveStats(data.stats);
+    // Format 3: Single set object `{ name: "...", lists: [...] }`
+    else if (data && typeof data === 'object' && data.lists && Array.isArray(data.lists)) {
+      parsedSets = normalizeImportedSets([data]);
     }
-    if (data.history && Array.isArray(data.history)) {
-      saveGameHistory(data.history);
+
+    if (!parsedSets || parsedSets.length === 0) {
+      return { 
+        success: false, 
+        message: 'Invalid format: JSON must be an exported backup object or an array of sets.' 
+      };
     }
-    return { success: true, message: 'Data restored successfully!' };
+
+    saveSets(parsedSets);
+    return { success: true, message: `Successfully imported ${parsedSets.length} word set(s)!` };
   } catch (e) {
-    return { success: false, message: `Failed to parse backup JSON: ${(e as Error).message}` };
+    return { success: false, message: `Failed to parse JSON file: ${(e as Error).message}` };
   }
 }
