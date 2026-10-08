@@ -11,11 +11,18 @@ import {
   HelpCircle,
   Dices,
   Check,
-  X
+  X,
+  Target,
+  AlertCircle
 } from 'lucide-react';
 import type { WordSet, WordList, GameConfig, WordStatsMap } from '../types';
 import { normalizeWord } from '../utils/storage';
-import { getSessionSizeOptions, selectSubsetWords } from '../utils/selection';
+import { 
+  getSessionSizeOptions, 
+  selectSubsetWords, 
+  getStrugglingWords,
+  type SessionSizeOption 
+} from '../utils/selection';
 
 interface HomeSelectorProps {
   sets: WordSet[];
@@ -101,11 +108,14 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
 
   // Play Set configuration modal state
   const [playModalSet, setPlayModalSet] = useState<WordSet | null>(null);
-  const [selectedSessionSize, setSelectedSessionSize] = useState<number>(30);
+  const [selectedOptionKey, setSelectedOptionKey] = useState<string>('subset-30');
+
+  const getOptionKey = (opt: SessionSizeOption) => `${opt.type}-${opt.count}`;
 
   const handleOpenPlayModal = (set: WordSet) => {
+    const allWords = set.lists.flatMap((l) => l.words);
     const seen = new Set<string>();
-    const uniqueWords = set.lists.flatMap((l) => l.words).filter((w) => {
+    const uniqueWords = allWords.filter((w) => {
       const key = normalizeWord(w.word);
       if (seen.has(key)) return false;
       seen.add(key);
@@ -117,55 +127,72 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
       return;
     }
 
-    const options = getSessionSizeOptions(uniqueWords.length);
+    const { totalStruggling } = getStrugglingWords(allWords, stats);
+    const options = getSessionSizeOptions(uniqueWords.length, totalStruggling);
 
     // If small set with only 1 option (e.g. <= 6 words), start full set immediately
-    if (options.length === 1) {
+    if (options.length === 1 && !options[0].disabled) {
       handlePlaySet(set);
       return;
     }
 
-    // Default to 30 if available, else 20, else the first option
+    // Default to 30 words if available, else first non-disabled option
     const defaultOption =
-      options.find((o) => o.count === 30) ||
-      options.find((o) => o.count === 20) ||
+      options.find((o) => o.type === 'subset' && o.count === 30) ||
+      options.find((o) => !o.disabled) ||
       options[0];
 
-    setSelectedSessionSize(defaultOption.count);
+    setSelectedOptionKey(getOptionKey(defaultOption));
     setPlayModalSet(set);
   };
 
   // Calculate modal dynamic preview data
-  const modalUniqueWords = playModalSet
-    ? playModalSet.lists.flatMap((l) => l.words)
-    : [];
+  const modalAllWords = playModalSet ? playModalSet.lists.flatMap((l) => l.words) : [];
+  const modalStruggling = playModalSet ? getStrugglingWords(modalAllWords, stats) : null;
 
-  const modalUniqueWordsCount = modalUniqueWords.filter(
+  const modalUniqueWordsCount = modalAllWords.filter(
     (w, idx, arr) => arr.findIndex((x) => normalizeWord(x.word) === normalizeWord(w.word)) === idx
   ).length;
 
   const availableSessionOptions = playModalSet
-    ? getSessionSizeOptions(modalUniqueWordsCount)
+    ? getSessionSizeOptions(modalUniqueWordsCount, modalStruggling?.totalStruggling || 0)
     : [];
 
-  const selectedOptionObj = availableSessionOptions.find((o) => o.count === selectedSessionSize);
+  const selectedOptionObj =
+    availableSessionOptions.find((o) => getOptionKey(o) === selectedOptionKey) ||
+    availableSessionOptions.find((o) => !o.disabled) ||
+    availableSessionOptions[0];
 
   const subsetPreview =
-    playModalSet && selectedOptionObj && !selectedOptionObj.isAll
-      ? selectSubsetWords(modalUniqueWords, selectedSessionSize, stats)
+    playModalSet && selectedOptionObj && selectedOptionObj.type === 'subset'
+      ? selectSubsetWords(modalAllWords, selectedOptionObj.count, stats)
       : null;
 
   const handleStartSession = () => {
-    if (!playModalSet) return;
+    if (!playModalSet || !selectedOptionObj) return;
     const allSetWords = playModalSet.lists.flatMap((l) => l.words);
 
-    if (selectedOptionObj?.isAll) {
+    if (selectedOptionObj.type === 'all') {
       handlePlaySet(playModalSet);
       setPlayModalSet(null);
       return;
     }
 
-    const { selected } = selectSubsetWords(allSetWords, selectedSessionSize, stats);
+    if (selectedOptionObj.type === 'struggling') {
+      const { words } = getStrugglingWords(allSetWords, stats, selectedOptionObj.count);
+      onStartGame({
+        targetType: 'struggling',
+        setId: playModalSet.id,
+        setName: playModalSet.name,
+        listName: `${playModalSet.name} (Struggling Words Review)`,
+        words,
+        subsetCount: words.length,
+      });
+      setPlayModalSet(null);
+      return;
+    }
+
+    const { selected } = selectSubsetWords(allSetWords, selectedOptionObj.count, stats);
     onStartGame({
       targetType: 'subset',
       setId: playModalSet.id,
@@ -255,6 +282,7 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
             const totalWordsInSet = set.lists.reduce((acc, l) => acc + l.words.length, 0);
             const allSetWords = set.lists.flatMap((l) => l.words);
             const setStats = getGroupStats(allSetWords);
+            const setStrugglingCount = getStrugglingWords(allSetWords, stats).totalStruggling;
 
             return (
               <div
@@ -276,6 +304,12 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
                         <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
                           {set.lists.length} {set.lists.length === 1 ? 'list' : 'lists'} • {totalWordsInSet} words
                         </span>
+                        {setStrugglingCount > 0 && (
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 text-rose-600" />
+                            {setStrugglingCount} need practice
+                          </span>
+                        )}
                         {setStats.accuracy !== null && (
                           <span
                             className={`text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
@@ -434,50 +468,74 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
               </button>
             </div>
 
-            {/* Smart Distribution or Full Set Explanatory Card */}
-            <div className="mb-5 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-2xl text-left">
-              <div className="flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-900 leading-relaxed font-medium">
-                  {selectedOptionObj?.isAll ? (
-                    <>
-                      <strong className="text-orange-700 font-bold">Entire Set Mode:</strong> Practice all {modalUniqueWordsCount} words in the set, presented in random shuffled order.
-                    </>
-                  ) : (
-                    <>
-                      <strong className="text-orange-700 font-bold">Smart Even Distribution:</strong> Words practiced the fewest times are chosen first so your child reviews every word in the book evenly over time!
-                    </>
-                  )}
-                </p>
+            {/* Smart Distribution, Struggling Review, or Full Set Explanatory Card */}
+            {selectedOptionObj?.type === 'struggling' ? (
+              <div className="mb-5 p-3.5 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200/80 rounded-2xl text-left">
+                <div className="flex items-start gap-2.5">
+                  <Target className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-rose-950 leading-relaxed font-medium">
+                    <strong className="text-rose-700 font-bold">Struggling Words Review:</strong> Focuses specifically on the {modalStruggling?.totalStruggling} words from this book with low accuracy (&lt;70%) or recent mistakes so your child can master them!
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="mb-5 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-2xl text-left">
+                <div className="flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-900 leading-relaxed font-medium">
+                    {selectedOptionObj?.type === 'all' ? (
+                      <>
+                        <strong className="text-orange-700 font-bold">Entire Set Mode:</strong> Practice all {modalUniqueWordsCount} words in the set, presented in random shuffled order.
+                      </>
+                    ) : (
+                      <>
+                        <strong className="text-orange-700 font-bold">Smart Even Distribution:</strong> Words practiced the fewest times are chosen first so your child reviews every word in the book evenly over time!
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Session Size Picker */}
             <div className="mb-5">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2.5">
-                Choose Session Size:
+                Choose Session Mode & Size:
               </label>
               <div className="grid grid-cols-2 gap-2.5">
                 {availableSessionOptions.map((opt) => {
-                  const isSelected = selectedSessionSize === opt.count;
+                  const optKey = getOptionKey(opt);
+                  const isSelected = selectedOptionKey === optKey;
+                  const isDisabled = !!opt.disabled;
+
                   return (
                     <button
-                      key={opt.count}
+                      key={optKey}
                       type="button"
-                      onClick={() => setSelectedSessionSize(opt.count)}
-                      className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                        isSelected
-                          ? 'border-orange-500 bg-orange-50 text-orange-950 shadow-xs scale-[1.01]'
-                          : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/80 text-slate-700'
+                      disabled={isDisabled}
+                      onClick={() => setSelectedOptionKey(optKey)}
+                      className={`p-3.5 rounded-2xl border-2 text-left transition-all ${
+                        isDisabled
+                          ? 'opacity-50 cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400'
+                          : isSelected
+                          ? opt.type === 'struggling'
+                            ? 'border-rose-500 bg-rose-50 text-rose-950 shadow-xs scale-[1.01] cursor-pointer'
+                            : 'border-orange-500 bg-orange-50 text-orange-950 shadow-xs scale-[1.01] cursor-pointer'
+                          : opt.type === 'struggling'
+                          ? 'border-rose-200 bg-rose-50/40 hover:bg-rose-100/60 text-rose-900 cursor-pointer'
+                          : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/80 text-slate-700 cursor-pointer'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-fun text-base sm:text-lg font-bold">
+                        <span className="font-fun text-base sm:text-lg font-bold flex items-center gap-1.5">
+                          {opt.type === 'struggling' && <Target className="w-4 h-4 text-rose-600" />}
                           {opt.label}
                         </span>
-                        {isSelected && <Check className="w-4 h-4 text-orange-600" />}
+                        {isSelected && (
+                          <Check className={`w-4 h-4 ${opt.type === 'struggling' ? 'text-rose-600' : 'text-orange-600'}`} />
+                        )}
                       </div>
-                      <span className="text-[11px] font-semibold text-slate-500 block">
+                      <span className={`text-[11px] font-semibold block ${opt.type === 'struggling' && !isDisabled ? 'text-rose-600' : 'text-slate-500'}`}>
                         {opt.subtitle}
                       </span>
                     </button>
@@ -498,7 +556,21 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
               </div>
             )}
 
-            {selectedOptionObj?.isAll && (
+            {selectedOptionObj?.type === 'struggling' && modalStruggling && modalStruggling.totalStruggling > 0 && (
+              <div className="mb-6 px-3.5 py-2.5 bg-rose-50/80 border border-rose-200/60 rounded-xl text-xs text-rose-800 font-medium flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>Reviewing {selectedOptionObj.count} words needing focus.</span>
+                </div>
+                {modalStruggling.candidates[0] && (
+                  <span className="text-[11px] font-bold text-rose-600">
+                    Lowest: {modalStruggling.candidates[0].accuracy}%
+                  </span>
+                )}
+              </div>
+            )}
+
+            {selectedOptionObj?.type === 'all' && (
               <div className="mb-6 px-3.5 py-2.5 bg-slate-100/80 rounded-xl text-xs text-slate-600 font-medium flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
                 <span>Full set session containing all {modalUniqueWordsCount} words.</span>
@@ -517,13 +589,19 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
               <button
                 type="button"
                 onClick={handleStartSession}
-                className="flex-2 py-3 px-5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-fun font-bold text-sm shadow-md shadow-orange-300/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className={`flex-2 py-3 px-5 rounded-xl text-white font-fun font-bold text-sm shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  selectedOptionObj?.type === 'struggling'
+                    ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-rose-300/40'
+                    : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-orange-300/40'
+                }`}
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>
-                  {selectedOptionObj?.isAll
+                  {selectedOptionObj?.type === 'all'
                     ? `Start (${modalUniqueWordsCount} Words)`
-                    : `Start (${selectedSessionSize} Words)`}
+                    : selectedOptionObj?.type === 'struggling'
+                    ? `Review (${selectedOptionObj.count} Struggling Words)`
+                    : `Start (${selectedOptionObj?.count || 30} Words)`}
                 </span>
               </button>
             </div>

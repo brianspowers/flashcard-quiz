@@ -53,6 +53,7 @@ The repository includes ready-to-use presets:
   - Sets and lists can hold an arbitrary number of words.
 - **Flexible Play Modes**:
   - **Play Set**: Click **Play Set** on any book to select your preferred practice size:
+    - **🎯 Struggling Words Review** (e.g. **Top 20 Struggling Words**): Instantly target words the child has made mistakes on, intelligently ranked by lowest accuracy, total mistakes, and broken streaks!
     - **Smart Subset Sizes** (e.g. **10**, **20**, **30**, or **50** words): Uses our **Smart Even-Distribution Algorithm** to prioritize words practiced the fewest times overall, ensuring every word in the book is reviewed evenly across sessions!
     - **Entire Set**: Practice all words in the book in shuffled order.
   - **Play Specific List**: Focused practice on an individual list.

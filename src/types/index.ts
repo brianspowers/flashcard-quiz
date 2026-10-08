@@ -29,7 +29,7 @@ export interface WordStats {
 // Map of word (lowercase trimmed) to its overall statistics
 export type WordStatsMap = Record<string, WordStats>;
 
-export type GameTargetType = 'set' | 'list' | 'subset';
+export type GameTargetType = 'set' | 'list' | 'subset' | 'struggling';
 
 export interface GameConfig {
   targetType: GameTargetType;

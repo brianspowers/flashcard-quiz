@@ -334,7 +334,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Group Label */}
           <div className="text-center truncate px-2">
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider block">
-              {config.targetType === 'subset'
+              {config.targetType === 'struggling'
+                ? `🎯 Struggling Words Review (${config.words.length} Words)`
+                : config.targetType === 'subset'
                 ? `Quick Subset (${config.words.length} Words)`
                 : config.targetType === 'set'
                 ? 'Set Practice'
