@@ -334,7 +334,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Group Label */}
           <div className="text-center truncate px-2">
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider block">
-              {config.targetType === 'set' ? 'Set Practice' : 'List Practice'}
+              {config.targetType === 'subset'
+                ? `Quick Subset (${config.words.length} Words)`
+                : config.targetType === 'set'
+                ? 'Set Practice'
+                : 'List Practice'}
             </span>
             <h3 className="font-fun font-bold text-slate-800 text-sm sm:text-base truncate">
               {config.listName || config.setName}

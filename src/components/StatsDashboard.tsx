@@ -651,8 +651,16 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                     <span className="font-fun text-base font-bold text-slate-800">
                       {game.targetName}
                     </span>
-                    <span className="text-xs px-2 py-0.5 rounded-md bg-slate-100 font-semibold text-slate-600 uppercase">
-                      {game.targetType}
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${
+                        game.targetType === 'subset'
+                          ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                          : game.targetType === 'set'
+                          ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                          : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                      }`}
+                    >
+                      {game.targetType === 'subset' ? 'Subset' : game.targetType}
                     </span>
                   </div>
                   <span className="text-xs text-slate-400 font-medium">

@@ -8,10 +8,14 @@ import {
   BookOpen, 
   Award, 
   Search, 
-  HelpCircle 
+  HelpCircle,
+  Dices,
+  Check,
+  X
 } from 'lucide-react';
 import type { WordSet, WordList, GameConfig, WordStatsMap } from '../types';
 import { normalizeWord } from '../utils/storage';
+import { getSessionSizeOptions, selectSubsetWords } from '../utils/selection';
 
 interface HomeSelectorProps {
   sets: WordSet[];
@@ -93,6 +97,84 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
       listName: list.name,
       words: list.words,
     });
+  };
+
+  // Play Set configuration modal state
+  const [playModalSet, setPlayModalSet] = useState<WordSet | null>(null);
+  const [selectedSessionSize, setSelectedSessionSize] = useState<number>(30);
+
+  const handleOpenPlayModal = (set: WordSet) => {
+    const seen = new Set<string>();
+    const uniqueWords = set.lists.flatMap((l) => l.words).filter((w) => {
+      const key = normalizeWord(w.word);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    if (uniqueWords.length === 0) {
+      alert('This set has no words yet! Add some words first in Manage Words.');
+      return;
+    }
+
+    const options = getSessionSizeOptions(uniqueWords.length);
+
+    // If small set with only 1 option (e.g. <= 6 words), start full set immediately
+    if (options.length === 1) {
+      handlePlaySet(set);
+      return;
+    }
+
+    // Default to 30 if available, else 20, else the first option
+    const defaultOption =
+      options.find((o) => o.count === 30) ||
+      options.find((o) => o.count === 20) ||
+      options[0];
+
+    setSelectedSessionSize(defaultOption.count);
+    setPlayModalSet(set);
+  };
+
+  // Calculate modal dynamic preview data
+  const modalUniqueWords = playModalSet
+    ? playModalSet.lists.flatMap((l) => l.words)
+    : [];
+
+  const modalUniqueWordsCount = modalUniqueWords.filter(
+    (w, idx, arr) => arr.findIndex((x) => normalizeWord(x.word) === normalizeWord(w.word)) === idx
+  ).length;
+
+  const availableSessionOptions = playModalSet
+    ? getSessionSizeOptions(modalUniqueWordsCount)
+    : [];
+
+  const selectedOptionObj = availableSessionOptions.find((o) => o.count === selectedSessionSize);
+
+  const subsetPreview =
+    playModalSet && selectedOptionObj && !selectedOptionObj.isAll
+      ? selectSubsetWords(modalUniqueWords, selectedSessionSize, stats)
+      : null;
+
+  const handleStartSession = () => {
+    if (!playModalSet) return;
+    const allSetWords = playModalSet.lists.flatMap((l) => l.words);
+
+    if (selectedOptionObj?.isAll) {
+      handlePlaySet(playModalSet);
+      setPlayModalSet(null);
+      return;
+    }
+
+    const { selected } = selectSubsetWords(allSetWords, selectedSessionSize, stats);
+    onStartGame({
+      targetType: 'subset',
+      setId: playModalSet.id,
+      setName: playModalSet.name,
+      listName: `${playModalSet.name} (${selected.length} Words)`,
+      words: selected,
+      subsetCount: selected.length,
+    });
+    setPlayModalSet(null);
   };
 
   // Filter sets by search term
@@ -217,15 +299,15 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
                     </div>
                   </div>
 
-                  {/* Set-Level Quick Action: Play All & Expand/Collapse Toggle */}
+                  {/* Set-Level Quick Action: Play Set & Expand/Collapse Toggle */}
                   <div className="flex items-center gap-2 shrink-0">
                     <button
-                      onClick={() => handlePlaySet(set)}
+                      onClick={() => handleOpenPlayModal(set)}
                       disabled={totalWordsInSet === 0}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-fun font-bold text-base shadow-md shadow-orange-300/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-fun font-bold text-base shadow-md shadow-orange-300/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       <Play className="w-4 h-4 fill-current" />
-                      <span>Play Entire Set</span>
+                      <span>Play Set</span>
                     </button>
 
                     <button
@@ -321,6 +403,131 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Play Set Configuration Modal */}
+      {playModalSet && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-amber-200 animate-pop">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-200 flex items-center justify-center text-2xl shrink-0">
+                  {playModalSet.icon || '📚'}
+                </div>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full inline-block mb-1">
+                    Play Session Setup
+                  </span>
+                  <h3 className="font-fun text-xl font-bold text-slate-800 leading-snug">
+                    {playModalSet.name}
+                  </h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setPlayModalSet(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Smart Distribution or Full Set Explanatory Card */}
+            <div className="mb-5 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-2xl text-left">
+              <div className="flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-900 leading-relaxed font-medium">
+                  {selectedOptionObj?.isAll ? (
+                    <>
+                      <strong className="text-orange-700 font-bold">Entire Set Mode:</strong> Practice all {modalUniqueWordsCount} words in the set, presented in random shuffled order.
+                    </>
+                  ) : (
+                    <>
+                      <strong className="text-orange-700 font-bold">Smart Even Distribution:</strong> Words practiced the fewest times are chosen first so your child reviews every word in the book evenly over time!
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Session Size Picker */}
+            <div className="mb-5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2.5">
+                Choose Session Size:
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {availableSessionOptions.map((opt) => {
+                  const isSelected = selectedSessionSize === opt.count;
+                  return (
+                    <button
+                      key={opt.count}
+                      type="button"
+                      onClick={() => setSelectedSessionSize(opt.count)}
+                      className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-orange-500 bg-orange-50 text-orange-950 shadow-xs scale-[1.01]'
+                          : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/80 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-fun text-base sm:text-lg font-bold">
+                          {opt.label}
+                        </span>
+                        {isSelected && <Check className="w-4 h-4 text-orange-600" />}
+                      </div>
+                      <span className="text-[11px] font-semibold text-slate-500 block">
+                        {opt.subtitle}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Dynamic Smart Breakdown / Preview */}
+            {subsetPreview && (
+              <div className="mb-6 px-3.5 py-2.5 bg-slate-100/80 rounded-xl text-xs text-slate-600 font-medium flex items-center gap-2">
+                <Dices className="w-4 h-4 text-orange-500 shrink-0" />
+                <span>
+                  {subsetPreview.summary.zeroAttemptCount > 0
+                    ? `Includes ${subsetPreview.summary.zeroAttemptCount} new word${subsetPreview.summary.zeroAttemptCount === 1 ? '' : 's'} not yet tested!`
+                    : `Selected words currently have only ${subsetPreview.summary.minPractices} prior attempt${subsetPreview.summary.minPractices === 1 ? '' : 's'}.`}
+                </span>
+              </div>
+            )}
+
+            {selectedOptionObj?.isAll && (
+              <div className="mb-6 px-3.5 py-2.5 bg-slate-100/80 rounded-xl text-xs text-slate-600 font-medium flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>Full set session containing all {modalUniqueWordsCount} words.</span>
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => setPlayModalSet(null)}
+                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleStartSession}
+                className="flex-2 py-3 px-5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-fun font-bold text-sm shadow-md shadow-orange-300/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                <span>
+                  {selectedOptionObj?.isAll
+                    ? `Start (${modalUniqueWordsCount} Words)`
+                    : `Start (${selectedSessionSize} Words)`}
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

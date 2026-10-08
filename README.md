@@ -52,9 +52,11 @@ The repository includes ready-to-use presets:
   - Words are grouped into **Sets**, which are further broken down into **Lists**.
   - Sets and lists can hold an arbitrary number of words.
 - **Flexible Play Modes**:
-  - Play against an entire **Set** (all unique words in the set shuffled together).
-  - Play against a specific **List** (focused list session).
-  - Shuffled presentation without replacement until each word is completed.
+  - **Play Set**: Click **Play Set** on any book to select your preferred practice size:
+    - **Smart Subset Sizes** (e.g. **10**, **20**, **30**, or **50** words): Uses our **Smart Even-Distribution Algorithm** to prioritize words practiced the fewest times overall, ensuring every word in the book is reviewed evenly across sessions!
+    - **Entire Set**: Practice all words in the book in shuffled order.
+  - **Play Specific List**: Focused practice on an individual list.
+  - **Practice Missed Words**: Directly replay struggled words after completing any game.
 - **Parent Co-Pilot Controls & Scoring**:
   - A giant, child-friendly flashcard displays one word at a time.
   - The child reads aloud, and the parent scores:
