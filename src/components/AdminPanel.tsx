@@ -703,7 +703,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     Bulk Paste Words
                   </h4>
                   <p className="text-xs text-purple-700 mb-3">
-                    Paste words separated by commas, spaces, or line breaks (e.g., from a spelling sheet or email).
+                    Paste words separated by commas or line breaks (e.g., from a spelling sheet or email).
                   </p>
                   <textarea
                     rows={4}

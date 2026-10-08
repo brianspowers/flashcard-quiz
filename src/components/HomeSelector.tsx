@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Play, 
-  Layers, 
   ListFilter, 
   Sparkles, 
   ChevronRight, 
+  ChevronDown,
   BookOpen, 
   Award, 
   Search, 
@@ -27,7 +27,21 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
   onGoToAdmin,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [expandedSetId, setExpandedSetId] = useState<string | null>(sets[0]?.id || null);
+  // Map of setId -> expanded boolean (default all expanded)
+  const [expandedSetIds, setExpandedSetIds] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    sets.forEach((s) => {
+      map[s.id] = true;
+    });
+    return map;
+  });
+
+  const toggleSetExpanded = (setId: string) => {
+    setExpandedSetIds((prev) => ({
+      ...prev,
+      [setId]: prev[setId] === undefined ? false : !prev[setId],
+    }));
+  };
 
   // Helper to compute stats for a collection of words
   const getGroupStats = (words: { word: string }[]) => {
@@ -161,7 +175,7 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
       ) : (
         <div className="space-y-6">
           {filteredSets.map((set) => {
-            const isExpanded = expandedSetId === set.id;
+            const isExpanded = expandedSetIds[set.id] ?? true;
             const totalWordsInSet = set.lists.reduce((acc, l) => acc + l.words.length, 0);
             const allSetWords = set.lists.flatMap((l) => l.words);
             const setStats = getGroupStats(allSetWords);
@@ -209,7 +223,7 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
                     </div>
                   </div>
 
-                  {/* Set-Level Quick Action: Play All */}
+                  {/* Set-Level Quick Action: Play All & Expand/Collapse Toggle */}
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handlePlaySet(set)}
@@ -221,88 +235,95 @@ export const HomeSelector: React.FC<HomeSelectorProps> = ({
                     </button>
 
                     <button
-                      onClick={() => setExpandedSetId(isExpanded ? null : set.id)}
-                      className="p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                      onClick={() => toggleSetExpanded(set.id)}
+                      className="flex items-center gap-1.5 px-3.5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer shadow-2xs"
                       title={isExpanded ? 'Collapse lists' : 'Expand lists'}
                     >
-                      <Layers className="w-4 h-4" />
+                      <span className="hidden sm:inline">{isExpanded ? 'Hide Lists' : 'Show Lists'}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          isExpanded ? 'rotate-180 text-orange-600' : 'text-slate-500'
+                        }`}
+                      />
                     </button>
                   </div>
                 </div>
 
-                {/* Sub-Lists within Set */}
-                <div className="p-4 sm:p-6">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-                    <ListFilter className="w-3.5 h-3.5" />
-                    <span>Choose a Specific List:</span>
-                  </div>
+                {/* Sub-Lists within Set (Collapsible) */}
+                {isExpanded && (
+                  <div className="p-4 sm:p-6 animate-pop">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
+                      <ListFilter className="w-3.5 h-3.5" />
+                      <span>Choose a Specific List:</span>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {set.lists.map((list) => {
-                      const listStats = getGroupStats(list.words);
-                      return (
-                        <div
-                          key={list.id}
-                          className="group relative bg-white hover:bg-orange-50/30 rounded-2xl p-4 border border-slate-200/90 hover:border-orange-300 transition-all flex flex-col justify-between shadow-2xs hover:shadow-sm"
-                        >
-                          <div>
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <h4 className="font-fun font-bold text-slate-800 text-base group-hover:text-orange-600 transition-colors">
-                                {list.name}
-                              </h4>
-                              <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 shrink-0">
-                                {list.words.length} words
-                              </span>
-                            </div>
-                            {list.description && (
-                              <p className="text-xs text-slate-500 mb-3 line-clamp-1">
-                                {list.description}
-                              </p>
-                            )}
-
-                            {/* Word preview badges */}
-                            <div className="flex flex-wrap gap-1 mb-4">
-                              {list.words.slice(0, 5).map((w) => (
-                                <span
-                                  key={w.id}
-                                  className="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600"
-                                >
-                                  {w.word}
-                                </span>
-                              ))}
-                              {list.words.length > 5 && (
-                                <span className="text-xs font-medium px-1.5 py-0.5 text-slate-400">
-                                  +{list.words.length - 5} more
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {set.lists.map((list) => {
+                        const listStats = getGroupStats(list.words);
+                        return (
+                          <div
+                            key={list.id}
+                            className="group relative bg-white hover:bg-orange-50/30 rounded-2xl p-4 border border-slate-200/90 hover:border-orange-300 transition-all flex flex-col justify-between shadow-2xs hover:shadow-sm"
+                          >
                             <div>
-                              {listStats.accuracy !== null ? (
-                                <span className="text-xs font-bold text-slate-600">
-                                  {listStats.accuracy}% accuracy
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <h4 className="font-fun font-bold text-slate-800 text-base group-hover:text-orange-600 transition-colors">
+                                  {list.name}
+                                </h4>
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 shrink-0">
+                                  {list.words.length} words
                                 </span>
-                              ) : (
-                                <span className="text-xs text-slate-400 font-medium">New / Unplayed</span>
+                              </div>
+                              {list.description && (
+                                <p className="text-xs text-slate-500 mb-3 line-clamp-1">
+                                  {list.description}
+                                </p>
                               )}
+
+                              {/* Word preview badges */}
+                              <div className="flex flex-wrap gap-1 mb-4">
+                                {list.words.slice(0, 5).map((w) => (
+                                  <span
+                                    key={w.id}
+                                    className="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600"
+                                  >
+                                    {w.word}
+                                  </span>
+                                ))}
+                                {list.words.length > 5 && (
+                                  <span className="text-xs font-medium px-1.5 py-0.5 text-slate-400">
+                                    +{list.words.length - 5} more
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
-                            <button
-                              onClick={() => handlePlayList(set, list)}
-                              disabled={list.words.length === 0}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-orange-100 hover:bg-orange-500 text-orange-700 hover:text-white transition-all group-hover:bg-orange-500 group-hover:text-white cursor-pointer"
-                            >
-                              <span>Play List</span>
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-auto">
+                              <div>
+                                {listStats.accuracy !== null ? (
+                                  <span className="text-xs font-bold text-slate-600">
+                                    {listStats.accuracy}% accuracy
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-slate-400 font-medium">New / Unplayed</span>
+                                )}
+                              </div>
+
+                              <button
+                                onClick={() => handlePlayList(set, list)}
+                                disabled={list.words.length === 0}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-orange-100 hover:bg-orange-500 text-orange-700 hover:text-white transition-all group-hover:bg-orange-500 group-hover:text-white cursor-pointer"
+                              >
+                                <span>Play List</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

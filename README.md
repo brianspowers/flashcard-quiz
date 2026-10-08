@@ -38,7 +38,7 @@ Designed for parents to review sight words and vocabulary with their children at
   - **Game History**: Log of past game sessions.
 - **Administrative Interface**:
   - Create, edit, and delete Sets and Lists.
-  - Add individual words or **Bulk Paste** words (comma, space, or newline separated).
+  - Add individual words or **Bulk Paste** words (comma or newline separated).
   - In-place spelling edits and word deletion.
   - **Export / Import JSON**: Back up or share your custom lists and progress.
   - Pre-loaded with curated Dolch sight words, colors, and animals out of the box.
@@ -176,7 +176,7 @@ If you have a list from a teacher, email, or curriculum worksheet and do not wan
 
 1. Open **Manage Words** &rarr; select any list.
 2. Click **Bulk Paste Words**.
-3. Paste words separated by commas, newlines, or spaces:
+3. Paste words separated by commas or newlines:
    ```text
    apple, banana, orange
    grape, peach, pear

@@ -199,8 +199,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     const isGreat = accuracyPct >= 80;
 
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8 animate-pop">
-        <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-xl border-4 border-amber-200 text-center relative overflow-hidden">
+      <div className="max-w-2xl w-full mx-auto px-4 py-4 sm:py-6 my-auto animate-pop">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-amber-200 text-center relative overflow-hidden">
           {/* Top celebratory banner */}
           <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-amber-400 via-pink-400 to-purple-400" />
 
@@ -318,10 +318,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const progressPct = deck.length > 0 ? Math.round(((currentIndex) / deck.length) * 100) : 0;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-4 sm:py-6 flex flex-col min-h-[calc(100vh-5rem)] justify-between">
+    <div className="max-w-3xl w-full mx-auto px-4 py-2 sm:py-3 flex flex-col flex-1 justify-between min-h-0">
       {/* Top Bar: Progress, Score & Exit */}
-      <div>
-        <div className="flex items-center justify-between gap-4 mb-3">
+      <div className="shrink-0">
+        <div className="flex items-center justify-between gap-4 mb-2">
           {/* Back/Exit button */}
           <button
             onClick={() => setShowExitConfirm(true)}
@@ -371,8 +371,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
         {/* Progress bar & Word Counter */}
-        <div className="bg-white/90 p-3 rounded-2xl border border-amber-100 shadow-2xs mb-4">
-          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-2">
+        <div className="bg-white/90 p-2.5 sm:p-3 rounded-2xl border border-amber-100 shadow-2xs mb-2 sm:mb-3">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1.5">
             <span className="flex items-center gap-1.5">
               <span>Card {currentIndex + 1} of {deck.length}</span>
               {currentStreak >= 3 && (
@@ -385,7 +385,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             <span>{progressPct}% Done</span>
           </div>
 
-          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5">
+          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden p-0.5">
             <div
               className="bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 h-full rounded-full transition-all duration-300 ease-out"
               style={{ width: `${Math.max(5, (currentIndex / deck.length) * 100)}%` }}
@@ -395,14 +395,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       </div>
 
       {/* Main Flashcard Display */}
-      <div className="my-auto py-4">
+      <div className="my-auto py-2 sm:py-3 flex-1 flex flex-col justify-center min-h-0">
         {currentWordItem ? (
           <div
             key={currentWordItem.id + currentIndex}
-            className="group relative bg-white rounded-3xl sm:rounded-4xl p-8 sm:p-14 text-center border-4 border-amber-200/90 shadow-2xl shadow-orange-100 transition-all transform animate-pop hover:shadow-orange-200/80"
+            className="group relative bg-white rounded-3xl sm:rounded-4xl p-6 sm:p-10 text-center border-4 border-amber-200/90 shadow-2xl shadow-orange-100 transition-all transform animate-pop hover:shadow-orange-200/80 my-auto flex flex-col justify-center"
           >
             {/* Top decorative badge */}
-            <div className="absolute top-4 left-6 flex items-center gap-2">
+            <div className="absolute top-3.5 left-5 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-pink-400 animate-pulse" />
               <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">
                 Word {currentIndex + 1}
@@ -410,7 +410,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </div>
 
             {/* Pronunciation button in top-right */}
-            <div className="absolute top-4 right-6 flex items-center gap-2">
+            <div className="absolute top-3.5 right-5 flex items-center gap-2">
               <button
                 onClick={() => speakWord(currentWordItem.word)}
                 title="Pronounce Word (or press S/P)"
@@ -422,8 +422,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </div>
 
             {/* Giant Child-Friendly Word */}
-            <div className="py-12 sm:py-16">
-              <span className="font-fun text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-wide text-slate-800 select-none drop-shadow-xs">
+            <div className="py-6 sm:py-10">
+              <span className="font-fun text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-wide text-slate-800 select-none drop-shadow-xs">
                 {currentWordItem.word}
               </span>
             </div>
@@ -434,20 +434,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </p>
           </div>
         ) : (
-          <div className="text-center py-12 text-slate-500 font-bold">Loading cards...</div>
+          <div className="text-center py-8 text-slate-500 font-bold">Loading cards...</div>
         )}
       </div>
 
       {/* Parent Action Controls */}
-      <div className="mt-4">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3">
+      <div className="mt-2 sm:mt-3 shrink-0">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-2">
           {/* Incorrect Button */}
           <button
             onClick={() => handleAnswer(false)}
-            className="group relative py-4 sm:py-5 px-4 rounded-2xl sm:rounded-3xl bg-rose-50 hover:bg-rose-100 text-rose-700 border-3 border-rose-300 hover:border-rose-400 font-fun font-bold text-lg sm:text-2xl shadow-md shadow-rose-200/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex flex-col sm:flex-row items-center justify-center gap-2 cursor-pointer"
+            className="group relative py-3 sm:py-4 px-4 rounded-2xl sm:rounded-3xl bg-rose-50 hover:bg-rose-100 text-rose-700 border-3 border-rose-300 hover:border-rose-400 font-fun font-bold text-lg sm:text-2xl shadow-md shadow-rose-200/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex flex-col sm:flex-row items-center justify-center gap-2 cursor-pointer"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
-              <X className="w-6 h-6 stroke-[3]" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+              <X className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
             </div>
             <div className="text-center sm:text-left">
               <span>Try Again</span>
@@ -460,10 +460,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Correct Button */}
           <button
             onClick={() => handleAnswer(true)}
-            className="group relative py-4 sm:py-5 px-4 rounded-2xl sm:rounded-3xl bg-emerald-500 hover:bg-emerald-600 text-white border-3 border-emerald-600 font-fun font-bold text-lg sm:text-2xl shadow-lg shadow-emerald-400/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex flex-col sm:flex-row items-center justify-center gap-2 cursor-pointer"
+            className="group relative py-3 sm:py-4 px-4 rounded-2xl sm:rounded-3xl bg-emerald-500 hover:bg-emerald-600 text-white border-3 border-emerald-600 font-fun font-bold text-lg sm:text-2xl shadow-lg shadow-emerald-400/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex flex-col sm:flex-row items-center justify-center gap-2 cursor-pointer"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-emerald-600 flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
-              <Check className="w-6 h-6 stroke-[3]" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white text-emerald-600 flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+              <Check className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
             </div>
             <div className="text-center sm:text-left">
               <span>Got It!</span>

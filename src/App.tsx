@@ -105,7 +105,7 @@ export function App() {
         isInGame={currentGame !== null}
       />
 
-      <main className="flex-1 pb-12">
+      <main className={`flex-1 flex flex-col ${currentGame ? 'min-h-0' : 'pb-12'}`}>
         {currentGame ? (
           <GameScreen
             key={currentGame.listId || currentGame.setId + '-' + currentGame.words.length + '-' + (currentGame.listName || '')}
