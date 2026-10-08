@@ -1,5 +1,8 @@
 # WordQuest - Word-Learning Flashcard Game for Kids 🌟
 
+> 🎮 **Play Live**: **[https://brianspowers.github.io/flashcard-quiz/](https://brianspowers.github.io/flashcard-quiz/)**  
+> *Open directly in your browser on iPad, tablet, phone, or desktop — no login or install needed.*
+
 A fun, interactive word-learning flashcard web application built with **React 19**, **TypeScript**, **Tailwind CSS v4**, and **Vite**.
 
 Designed for parents to review sight words and vocabulary with their children at their own pace.
@@ -219,6 +222,23 @@ npm run build
 ```bash
 npm run lint
 ```
+
+---
+
+## 🌐 GitHub Pages Deployment
+
+The application is deployed live to **[https://brianspowers.github.io/flashcard-quiz/](https://brianspowers.github.io/flashcard-quiz/)**.
+
+### Automatic & On-Demand Deployments:
+- **Continuous Deployment**: Every push to the `main` branch automatically triggers the build and deployment workflow. Your live app updates in ~35 seconds!
+- **Manual Trigger**: You can also re-trigger deployments anytime on-demand:
+  1. In your GitHub repository, click the **Actions** tab.
+  2. In the left workflow sidebar, click **Deploy to GitHub Pages**.
+  3. Click **Run workflow** &rarr; select branch `main` &rarr; click **Run workflow**.
+
+> **One-Time GitHub Pages Setup**:
+> 1. In your GitHub repository, navigate to **Settings** &rarr; **Pages**.
+> 2. Under **Build and deployment** &rarr; **Source**, select **GitHub Actions**.
 
 ---
 
